@@ -13,7 +13,7 @@ from zhaquirks.const import (
 )
 from zhaquirks import LocalDataCluster
 from zigpy.profiles import zha
-from zigpy.quirks import CustomDevice
+from zigpy.quirks import CustomDevice, CustomCluster
 from zigpy.zcl.clusters.general import (
     AnalogInput,
     Basic,
@@ -25,7 +25,9 @@ from zigpy.zcl.clusters.general import (
 )
 
 PTVO: Final = "PTVO"
-CURRENT_TEMPERATURE: Final = 0x0055
+
+PRESENT_VALUE: Final = 0x0055
+CURRENT_TEMPERATURE: Final = 0x0000
 
 
 class PtvoDeviceType(t.enum16):
@@ -34,24 +36,20 @@ class PtvoDeviceType(t.enum16):
     GENERIC = 0xFFFE
 
 
-class DeviceTemperatureCluster(LocalDataCluster, DeviceTemperature):
-    """PTVO device temperature cluster."""
-
-    cluster_id = AnalogInput.cluster_id
-    attributes = DeviceTemperature.attributes.copy()
-
-    attributes.pop(0x0000)
-    attributes.update(
-        {
-            CURRENT_TEMPERATURE: ("current_temperature", t.int16s, True),
-        }
-    )
+class AnalogInputCluster(CustomCluster, AnalogInput):
+    """PTVO device temperature analog input cluster."""
 
     def _update_attribute(self, attrid, value):
-        if attrid == CURRENT_TEMPERATURE:
-            value *= 100
-
         super()._update_attribute(attrid, value)
+
+        if attrid == PRESENT_VALUE:
+            self.endpoint.device_temperature.update_attribute(
+                CURRENT_TEMPERATURE, value * 100
+            )
+
+
+class DeviceTemperatureCluster(LocalDataCluster, DeviceTemperature):
+    """PTVO device temperature cluster."""
 
 
 class PtvoZbminiLightV1(CustomDevice):
@@ -130,7 +128,10 @@ class PtvoZbminiLightV1(CustomDevice):
             },
             3: {
                 DEVICE_TYPE: zha.DeviceType.TEMPERATURE_SENSOR,
-                INPUT_CLUSTERS: [DeviceTemperatureCluster],
+                INPUT_CLUSTERS: [
+                    AnalogInputCluster,
+                    DeviceTemperatureCluster,
+                ],
             },
             242: {
                 OUTPUT_CLUSTERS: [GreenPowerProxy.cluster_id],
@@ -219,7 +220,10 @@ class PtvoZbminiLightV2(CustomDevice):
             },
             3: {
                 DEVICE_TYPE: zha.DeviceType.TEMPERATURE_SENSOR,
-                INPUT_CLUSTERS: [DeviceTemperatureCluster],
+                INPUT_CLUSTERS: [
+                    AnalogInputCluster,
+                    DeviceTemperatureCluster,
+                ],
             },
             242: {
                 OUTPUT_CLUSTERS: [GreenPowerProxy.cluster_id],
