@@ -59,7 +59,7 @@ class PtvoZbminiLightV1(CustomDevice):
     signature = {
         MODELS_INFO: ((PTVO, "ZBMINI"),),
         ENDPOINTS: {
-            # <SimpleDescriptor endpoint=1 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=1 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[0, 7]
             # output_clusters=[18]>
@@ -74,7 +74,7 @@ class PtvoZbminiLightV1(CustomDevice):
                     MultistateInput.cluster_id,
                 ],
             },
-            # <SimpleDescriptor endpoint=2 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=2 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[6]
             # output_clusters=[6]>
@@ -88,7 +88,7 @@ class PtvoZbminiLightV1(CustomDevice):
                     OnOff.cluster_id,
                 ],
             },
-            # <SimpleDescriptor endpoint=3 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=3 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[12]>
             3: {
@@ -147,7 +147,7 @@ class PtvoZbminiLightV2(CustomDevice):
     signature = {
         MODELS_INFO: ((PTVO, "ZBMINI"),),
         ENDPOINTS: {
-            # <SimpleDescriptor endpoint=1 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=1 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[0, 7]
             # output_clusters=[0, 18]>
@@ -163,7 +163,7 @@ class PtvoZbminiLightV2(CustomDevice):
                     MultistateInput.cluster_id,
                 ],
             },
-            # <SimpleDescriptor endpoint=2 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=2 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[6, 7]
             # output_clusters=[6]>
@@ -178,7 +178,7 @@ class PtvoZbminiLightV2(CustomDevice):
                     OnOff.cluster_id,
                 ],
             },
-            # <SimpleDescriptor endpoint=3 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=3 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[12]>
             3: {
@@ -239,7 +239,7 @@ class PtvoZbminiLightV3(CustomDevice):
     signature = {
         MODELS_INFO: ((PTVO, "ZBMINI"),),
         ENDPOINTS: {
-            # <SimpleDescriptor endpoint=1 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=1 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[0, 7]
             # output_clusters=[0, 18]>
@@ -255,7 +255,7 @@ class PtvoZbminiLightV3(CustomDevice):
                     MultistateInput.cluster_id,
                 ],
             },
-            # <SimpleDescriptor endpoint=2 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=2 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[6, 7]
             # output_clusters=[6]>
@@ -270,7 +270,7 @@ class PtvoZbminiLightV3(CustomDevice):
                     OnOff.cluster_id,
                 ],
             },
-            # <SimpleDescriptor endpoint=3 profile=260 device_type=61438
+            # <SimpleDescriptor endpoint=3 profile=260 device_type=65534
             # device_version=1
             # input_clusters=[1026]>
             3: {
@@ -317,6 +317,84 @@ class PtvoZbminiLightV3(CustomDevice):
             },
             242: {
                 OUTPUT_CLUSTERS: [GreenPowerProxy.cluster_id],
+            },
+        }
+    }
+
+
+class PtvoZbminiLightV3EndDevice(CustomDevice):
+    """PTVO ZBMINI light version 3 (end device version)."""
+
+    signature = {
+        MODELS_INFO: ((PTVO, "ZBMINI"),),
+        ENDPOINTS: {
+            # <SimpleDescriptor endpoint=1 profile=260 device_type=65534
+            # device_version=1
+            # input_clusters=[0, 7]
+            # output_clusters=[0, 18]>
+            1: {
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: PtvoDeviceType.GENERIC,
+                INPUT_CLUSTERS: [
+                    Basic.cluster_id,
+                    OnOffConfiguration.cluster_id,
+                ],
+                OUTPUT_CLUSTERS: [
+                    Basic.cluster_id,
+                    MultistateInput.cluster_id,
+                ],
+            },
+            # <SimpleDescriptor endpoint=2 profile=260 device_type=65534
+            # device_version=1
+            # input_clusters=[6, 7]
+            # output_clusters=[6]>
+            2: {
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: PtvoDeviceType.GENERIC,
+                INPUT_CLUSTERS: [
+                    OnOff.cluster_id,
+                    OnOffConfiguration.cluster_id,
+                ],
+                OUTPUT_CLUSTERS: [
+                    OnOff.cluster_id,
+                ],
+            },
+            # <SimpleDescriptor endpoint=3 profile=260 device_type=65534
+            # device_version=1
+            # input_clusters=[1026]>
+            3: {
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: PtvoDeviceType.GENERIC,
+                INPUT_CLUSTERS: [TemperatureMeasurement.cluster_id],
+            },
+        },
+    }
+
+    replacement = {
+        ENDPOINTS: {
+            1: {
+                INPUT_CLUSTERS: [
+                    Basic.cluster_id,
+                    OnOffConfiguration.cluster_id,
+                ],
+                OUTPUT_CLUSTERS: [
+                    Basic.cluster_id,
+                    MultistateInput.cluster_id,
+                ],
+            },
+            2: {
+                DEVICE_TYPE: zha.DeviceType.ON_OFF_LIGHT,
+                INPUT_CLUSTERS: [
+                    OnOff.cluster_id,
+                    OnOffConfiguration.cluster_id,
+                ],
+                OUTPUT_CLUSTERS: [
+                    OnOff.cluster_id,
+                ],
+            },
+            3: {
+                DEVICE_TYPE: zha.DeviceType.TEMPERATURE_SENSOR,
+                INPUT_CLUSTERS: [TemperatureMeasurement.cluster_id],
             },
         }
     }
