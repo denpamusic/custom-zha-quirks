@@ -32,16 +32,6 @@ class TuyaLevelControl(CustomCluster, LevelControl):
 
     CURRENT_LEVEL_ATTR = LevelControl.AttributeDefs.current_level.id
 
-    async def _update_current_level(
-        self, level: int, manufacturer: int | None = None
-    ) -> None:
-        """Update current level."""
-        previous_level = self._attr_cache.get(self.CURRENT_LEVEL_ATTR)
-        if level != previous_level:
-            await self.write_attributes(
-                {self.CURRENT_LEVEL_ATTR: level}, manufacturer=manufacturer
-            )
-
     async def command(
         self,
         command_id: int,
@@ -56,21 +46,12 @@ class TuyaLevelControl(CustomCluster, LevelControl):
             self.ServerCommandDefs.move_to_level.id,
             self.ServerCommandDefs.move_to_level_with_on_off.id,
         ):
-            if kwargs and "level" in kwargs:
-                level = kwargs["level"]
-            elif args:
-                level = args[0]
-            else:
-                level = 0
-
-            await self._update_current_level(level, manufacturer=manufacturer)
-            # convert dim level to brightness [30...254]
-            brightness = level * (254 - 30) // 254 + 30
-            if args:
-                args = list(args)
-                args[0] = brightness
-            else:
-                kwargs["level"] = brightness
+            level = args[0] if args else kwargs.get("level")
+            previous_level = self._attr_cache.get(self.CURRENT_LEVEL_ATTR)
+            if level != previous_level:
+                await self.write_attributes(
+                    {self.CURRENT_LEVEL_ATTR: level}, manufacturer=manufacturer
+                )
 
         return await super().command(
             command_id,
