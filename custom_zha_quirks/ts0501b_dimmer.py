@@ -30,8 +30,6 @@ from zhaquirks import CustomCluster
 class TuyaLevelControl(CustomCluster, LevelControl):
     """Custom LevelControl cluster to fix level update and range."""
 
-    CURRENT_LEVEL_ATTR = LevelControl.AttributeDefs.current_level.id
-
     async def command(
         self,
         command_id: int,
@@ -46,12 +44,17 @@ class TuyaLevelControl(CustomCluster, LevelControl):
             self.ServerCommandDefs.move_to_level.id,
             self.ServerCommandDefs.move_to_level_with_on_off.id,
         ):
-            level = args[0] if args else kwargs.get("level")
-            previous_level = self._attr_cache.get(self.CURRENT_LEVEL_ATTR)
-            if level != previous_level:
-                await self.write_attributes(
-                    {self.CURRENT_LEVEL_ATTR: level}, manufacturer=manufacturer
-                )
+            if kwargs and "level" in kwargs:
+                level = kwargs["level"]
+            elif args:
+                level = args[0]
+            else:
+                level = 0
+
+            await self.write_attributes(
+                {self.attributes_by_name["current_level"].id: level},
+                manufacturer=manufacturer,
+            )
 
         return await super().command(
             command_id,
