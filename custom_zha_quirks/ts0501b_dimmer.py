@@ -15,6 +15,7 @@ from zigpy.zcl.clusters.general import (
 )
 from zigpy.zcl.clusters.lighting import Color
 
+from zigpy.zcl import foundation
 from zhaquirks.const import (
     DEVICE_TYPE,
     ENDPOINTS,
@@ -28,7 +29,16 @@ from zhaquirks import CustomCluster
 
 
 class TuyaLevelControl(CustomCluster, LevelControl):
-    """Custom LevelControl cluster to fix level update and range."""
+    """Custom LevelControl cluster to fix level update and on/off."""
+
+    @staticmethod
+    def on_off_command_id(on_off: bool) -> int:
+        """Get command id for boolean value."""
+        return (
+            OnOff.commands_by_name["on"].id
+            if on_off
+            else OnOff.commands_by_name["off"].id
+        )
 
     async def command(
         self,
@@ -39,18 +49,40 @@ class TuyaLevelControl(CustomCluster, LevelControl):
         tsn: int | None = None,
         **kwargs: Any,
     ):
-        """Override command method to update current_level on move_to_level."""
-        if command_id in (
-            self.ServerCommandDefs.move_to_level.id,
-            self.ServerCommandDefs.move_to_level_with_on_off.id,
-        ):
-            if kwargs and "level" in kwargs:
-                level = kwargs["level"]
-            elif args:
-                level = args[0]
-            else:
-                level = 0
+        """Override command method to update current_level on move_to_level(_with_on_off)."""
+        if kwargs and "level" in kwargs:
+            level = kwargs["level"]
+        elif args:
+            level = args[0]
+        else:
+            level = 0
 
+        on_off = bool(level)
+
+        if (
+            command_id == self.commands_by_name["move_to_level_with_on_off"].id
+            and self.endpoint.on_off.get("on_off") != on_off
+        ):
+            self.create_catching_task(
+                self.endpoint.on_off.command(
+                    command_id=self.on_off_command_id(on_off),
+                    manufacturer=manufacturer,
+                    expect_reply=False,
+                )
+            )
+
+        if (
+            command_id == self.commands_by_name["move_to_level_with_on_off"].id
+            and not on_off
+        ):
+            return foundation.GENERAL_COMMANDS[
+                foundation.GeneralCommand.Default_Response
+            ].schema(command_id=command_id, status=foundation.Status.SUCCESS)
+
+        if command_id in (
+            self.commands_by_name["move_to_level"].id,
+            self.commands_by_name["move_to_level_with_on_off"].id,
+        ):
             await self.write_attributes(
                 {self.attributes_by_name["current_level"].id: level},
                 manufacturer=manufacturer,
@@ -66,7 +98,7 @@ class TuyaLevelControl(CustomCluster, LevelControl):
         )
 
 
-class DimmerModule(CustomDevice):
+class DimmerModule0_10V(CustomDevice):
     """GIRIER 0/1-10V dimmer module single channel."""
 
     signature = {
